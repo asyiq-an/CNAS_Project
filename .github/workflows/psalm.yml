@@ -1,0 +1,26 @@
+# .github/workflows/psalm.yml
+name: Psalm PHP Static Analysis
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  psalm:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v3
+        with:
+          php-version: '8.2'
+
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist --no-interaction
+
+      - name: Run Psalm
+        run: vendor/bin/psalm --show-info=false
