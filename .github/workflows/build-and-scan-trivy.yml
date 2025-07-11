@@ -8,70 +8,55 @@ on:
 jobs:
   build-and-scan:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        include:
-          - name: php-app
-            path: ./php-app
-            tag: ghcr.io/${{ github.repository_owner }}/cnas-php-app:latest
-          - name: nginx
-            path: ./nginx
-            tag: ghcr.io/${{ github.repository_owner }}/cnas-nginx-proxy:latest
-          - name: mysql
-            path: ./mysql
-            tag: ghcr.io/${{ github.repository_owner }}/cnas-mysql-db:latest
+    timeout-minutes: 10  # add timeout
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Log in to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GHCR_PAT }}
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_PAT }}
 
-    - name: Build Docker image ${{ matrix.name }}
-      run: |
-        # For mysql, avoid hardcoding MYSQL_ROOT_PASSWORD in Dockerfile.
-        # If needed, pass as build arg (if your Dockerfile supports it).
-        if [ "${{ matrix.name }}" == "mysql" ]; then
-          docker build --build-arg MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} -t ${{ matrix.tag }} ${{ matrix.path }}
-        else
-          docker build -t ${{ matrix.tag }} ${{ matrix.path }}
-        fi
+      - name: Build Docker image ${{ matrix.name }}
+        run: |
+          if [ "${{ matrix.name }}" == "mysql" ]; then
+            docker build --build-arg MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} -t ${{ matrix.tag }} ${{ matrix.path }}
+          else
+            docker build -t ${{ matrix.tag }} ${{ matrix.path }}
+          fi
 
-    - name: Install Trivy scanner
-      run: |
-        wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_Linux-64bit.deb
-        sudo dpkg -i trivy_Linux-64bit.deb
+      - name: Install Trivy scanner
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin
 
-    - name: Run Trivy scan - ${{ matrix.name }}
-      id: trivy_scan
-      continue-on-error: true
-      run: |
-        trivy image \
-          --format table \
-          --output trivy-report-${{ matrix.name }}.txt \
-          --exit-code 1 \
-          --ignore-unfixed \
-          --vuln-type os,library \
-          ${{ matrix.tag }}
+      - name: Run Trivy scan - ${{ matrix.name }}
+        id: trivy_scan
+        continue-on-error: true
+        run: |
+          trivy image \
+            --format table \
+            --output trivy-report-${{ matrix.name }}.txt \
+            --exit-code 1 \
+            --ignore-unfixed \
+            --vuln-type os,library \
+            ${{ matrix.tag }}
 
-    - name: Upload Trivy report - ${{ matrix.name }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: trivy-report-${{ matrix.name }}
-        path: trivy-report-${{ matrix.name }}.txt
+      - name: Upload Trivy report - ${{ matrix.name }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report-${{ matrix.name }}
+          path: trivy-report-${{ matrix.name }}.txt
 
-    - name: Warn if vulnerabilities found - ${{ matrix.name }}
-      if: steps.trivy_scan.outcome == 'failure'
-      run: echo "⚠️ Vulnerabilities found in image ${{ matrix.name }} - check the Trivy report artifact."
+      - name: Warn if vulnerabilities found - ${{ matrix.name }}
+        if: steps.trivy_scan.outcome == 'failure'
+        run: echo "⚠️ Vulnerabilities found in image ${{ matrix.name }} - check the Trivy report artifact."
 
-    - name: Push Docker image ${{ matrix.name }}
-      run: docker push ${{ matrix.tag }}
+      - name: Push Docker image ${{ matrix.name }}
+        run: docker push ${{ matrix.tag }}
