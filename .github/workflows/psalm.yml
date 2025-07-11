@@ -1,4 +1,3 @@
-# .github/workflows/psalm.yml
 name: Psalm PHP Static Analysis
 
 on:
@@ -14,6 +13,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          path: .
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -27,4 +28,3 @@ jobs:
       - name: Run Psalm
         run: ./vendor/bin/psalm
         working-directory: cnas2/php-app
-
