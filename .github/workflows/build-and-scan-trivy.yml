@@ -8,7 +8,7 @@ on:
     branches: [ main ]
 
 env:
-  IMAGE_NAME: ghcr.io/${{ github.repository }}:latest
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/cnas_project:latest
 
 jobs:
   build-push-scan:
