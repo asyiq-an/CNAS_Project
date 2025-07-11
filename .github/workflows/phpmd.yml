@@ -1,20 +1,28 @@
-# .github/workflows/phpmd.yml
 name: PHPMD Static Analysis
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
 
 jobs:
   phpmdbuild:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v3
+      
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2   # <== Use v2 here instead of v3
+        uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
+
+      - name: Install PHPMD
+        run: composer global require phpmd/phpmd
+
+      - name: Add Composer global bin to PATH
+        run: echo "${{ github.workspace }}/.composer/vendor/bin" >> $GITHUB_PATH
+
       - name: Run PHPMD
         run: phpmd src text cleancode,codesize,controversial,design,naming,unusedcode
-
