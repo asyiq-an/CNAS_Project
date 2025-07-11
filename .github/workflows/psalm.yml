@@ -4,29 +4,26 @@ on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main ]
 
 jobs:
   psalm:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          path: CNAS_Project
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 8.2
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
 
-      # Skip composer install
+    - name: Download Psalm PHAR
+      run: |
+        curl -L https://github.com/vimeo/psalm/releases/latest/download/psalm.phar -o psalm.phar
+        chmod +x psalm.phar
+      working-directory: php-app
 
-      - name: Run Psalm
-        run: |
-          curl -L https://github.com/vimeo/psalm/releases/latest/download/psalm.phar -o psalm.phar
-          chmod +x psalm.phar
-          ./psalm.phar --version
-          ./psalm.phar --show-info=true
-        working-directory: CNAS_Project/cnas2/php-app
+    - name: Run Psalm analysis
+      run: ./psalm.phar --show-info=true
+      working-directory: php-app
