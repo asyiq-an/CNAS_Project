@@ -3,28 +3,28 @@ name: Psalm PHP Static Analysis
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   psalm:
-    name: Run Psalm
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2  # ✅ CORRECT VERSION
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
-          tools: composer
+          php-version: 8.2
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
+        working-directory: cnas2/php-app
 
       - name: Run Psalm
-        run: vendor/bin/psalm
+        run: ./vendor/bin/psalm
+        working-directory: cnas2/php-app
 
