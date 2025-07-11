@@ -14,17 +14,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          path: .
+          path: CNAS_Project
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.2
 
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
-        working-directory: cnas2/php-app
+      # Skip composer install
 
       - name: Run Psalm
-        run: ./vendor/bin/psalm
-        working-directory: cnas2/php-app
+        run: |
+          curl -L https://github.com/vimeo/psalm/releases/latest/download/psalm.phar -o psalm.phar
+          chmod +x psalm.phar
+          ./psalm.phar --version
+          ./psalm.phar --show-info=true
+        working-directory: CNAS_Project/cnas2/php-app
