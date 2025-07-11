@@ -1,4 +1,4 @@
-name: Build, Scan, and Push Docker Images with Trivy
+name: Build Scan Push w Trivy
 
 on:
   push:
@@ -34,7 +34,7 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ secrets.GHCR_PAT }}   # Use your PAT here, NOT GITHUB_TOKEN
 
     - name: Build Docker image ${{ matrix.name }}
       run: docker build -t ${{ matrix.tag }} ${{ matrix.path }}
