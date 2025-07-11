@@ -1,9 +1,11 @@
 # .github/workflows/yamllint.yml
+---
 name: YAML Lint
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
 
 jobs:
