@@ -1,11 +1,12 @@
 # .github/workflows/codeql-analysis.yml
+---
 name: CodeQL
 
 on:
   push:
-    branches: [main]
+    branches: [ "main" ]
   pull_request:
-    branches: [main]
+    branches: [ "main" ]
 
 jobs:
   analyze:
@@ -18,7 +19,7 @@ jobs:
 
     strategy:
       matrix:
-        language: ['php']
+        language: [ "php" ]
 
     steps:
       - name: Checkout repository
@@ -31,3 +32,4 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v2
+
