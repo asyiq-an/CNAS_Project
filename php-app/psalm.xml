@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<psalm
+    totallyTyped="false"
+    errorLevel="1"
+    resolveFromConfigFile="true"
+>
+  <projectFiles>
+    <directory name="."/>
+  </projectFiles>
+</psalm>
