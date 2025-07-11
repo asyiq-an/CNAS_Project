@@ -5,22 +5,26 @@ on:
   push:
     branches: [main]
   pull_request:
+    branches: [main]
 
 jobs:
   psalm:
+    name: Run Psalm
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v3
+        uses: shivammathur/setup-php@v2  # ✅ CORRECT VERSION
         with:
           php-version: '8.2'
+          tools: composer
 
       - name: Install dependencies
-        run: composer install --no-progress --prefer-dist --no-interaction
+        run: composer install --prefer-dist --no-progress
 
       - name: Run Psalm
-        run: vendor/bin/psalm --show-info=false
+        run: vendor/bin/psalm
+
