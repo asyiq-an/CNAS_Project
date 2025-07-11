@@ -9,6 +9,7 @@ jobs:
   build-and-scan:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - name: php-app
@@ -31,7 +32,18 @@ jobs:
       - name: Build Docker image - ${{ matrix.name }}
         run: docker build -t ${{ matrix.tag }}:local ${{ matrix.context }}
 
+      - name: Install Trivy scanner
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update
+          sudo apt-get install -y trivy
+
       - name: Run Trivy vulnerability scan - ${{ matrix.name }}
+        id: trivy_scan
+        continue-on-error: true
         run: |
           trivy image \
             --format table \
@@ -47,3 +59,9 @@ jobs:
         with:
           name: trivy-report-${{ matrix.name }}
           path: trivy-report-${{ matrix.name }}.txt
+
+      - name: Fail if vulnerabilities found - ${{ matrix.name }}
+        if: steps.trivy_scan.outcome == 'failure'
+        run: |
+          echo "Trivy scan detected vulnerabilities in ${{ matrix.name }} image."
+          exit 1
