@@ -34,17 +34,22 @@ jobs:
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ secrets.GHCR_PAT }}
 
     - name: Build Docker image ${{ matrix.name }}
-      run: docker build -t ${{ matrix.tag }} ${{ matrix.path }}
-
-    - name: Install Trivy
       run: |
-        sudo apt-get update
-        sudo apt-get install -y wget
-        wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.43.3_Linux-64bit.deb
-        sudo dpkg -i trivy_0.43.3_Linux-64bit.deb
+        # For mysql, avoid hardcoding MYSQL_ROOT_PASSWORD in Dockerfile.
+        # If needed, pass as build arg (if your Dockerfile supports it).
+        if [ "${{ matrix.name }}" == "mysql" ]; then
+          docker build --build-arg MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} -t ${{ matrix.tag }} ${{ matrix.path }}
+        else
+          docker build -t ${{ matrix.tag }} ${{ matrix.path }}
+        fi
+
+    - name: Install Trivy scanner
+      run: |
+        wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_Linux-64bit.deb
+        sudo dpkg -i trivy_Linux-64bit.deb
 
     - name: Run Trivy scan - ${{ matrix.name }}
       id: trivy_scan
