@@ -11,12 +11,16 @@ jobs:
     timeout-minutes: 30
     strategy:
       matrix:
-        name: [mysql, php-app, nginx]
-        path: [./mysql, ./php-app, ./nginx]
-        tag:
-          - ghcr.io/asyiq-an/cnas-mysql-db:latest
-          - ghcr.io/asyiq-an/cnas-php-app:latest
-          - ghcr.io/asyiq-an/cnas-nginx-proxy:latest
+        include:
+          - name: mysql
+            path: ./mysql
+            tag: ghcr.io/asyiq-an/cnas-mysql-db:latest
+          - name: php-app
+            path: ./php-app
+            tag: ghcr.io/asyiq-an/cnas-php-app:latest
+          - name: nginx
+            path: ./nginx
+            tag: ghcr.io/asyiq-an/cnas-nginx-proxy:latest
 
     steps:
       - uses: actions/checkout@v4
