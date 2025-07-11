@@ -25,4 +25,4 @@ jobs:
         run: echo "${{ github.workspace }}/.composer/vendor/bin" >> $GITHUB_PATH
 
       - name: Run PHPMD
-        run: phpmd src text cleancode,codesize,controversial,design,naming,unusedcode
+        run: phpmd php-app text cleancode,codesize,controversial,design,naming,unusedcode
