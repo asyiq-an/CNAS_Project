@@ -1,7 +1,7 @@
 # CNAS_Project
 CNAS_Project
 
-cnas2/
+CNAS_Project/
 ├── php-app/
 │   ├── Dockerfile
 │   └── (php source files)
