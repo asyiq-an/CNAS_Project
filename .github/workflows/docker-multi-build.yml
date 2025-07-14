@@ -1,13 +1,19 @@
-name: Build, Test, and Push All Services
-# HEHE HAHA
+name: CI – Build, Test & Push All Services
+
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
+
+env:
+  DOCKERHUB_NAMESPACE: asyiqan
+  IMAGE_TAG: ${{ github.sha }}
 
 jobs:
   build-test-push:
     runs-on: ubuntu-latest
+
     services:
       mysql:
         image: mysql:8.0
@@ -23,40 +29,49 @@ jobs:
           --health-retries=3
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Login to DockerHub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build php-app
-      run: docker build -t asyiqan/cnas-php-app:latest ./php-app
+      - name: Build & Push Nginx
+        run: |
+          docker build -t $DOCKERHUB_NAMESPACE/cnas-nginx-proxy:${IMAGE_TAG} ./nginx
+          docker push   $DOCKERHUB_NAMESPACE/cnas-nginx-proxy:${IMAGE_TAG}
 
-    - name: Build nginx
-      run: docker build -t asyiqan/cnas-nginx-proxy:latest ./nginx
+      - name: Build & Push MySQL Init Image
+        run: |
+          # optional: if you have a custom Dockerfile under database/
+          docker build -t $DOCKERHUB_NAMESPACE/cnas-mysql-db:${IMAGE_TAG} ./database
+          docker push   $DOCKERHUB_NAMESPACE/cnas-mysql-db:${IMAGE_TAG}
 
-    - name: Build mysql
-      run: docker build -t asyiqan/cnas-mysql-db:latest ./mysql
+      # Loop through each PHP service folder
+      - name: Build, Test & Push PHP Micro‑services
+        run: |
+          for svc in services/*; do
+            svc_name=$(basename "$svc")
+            img="$DOCKERHUB_NAMESPACE/$svc_name"
+            echo "→ Building $svc_name"
+            docker build -t $img:${IMAGE_TAG} "$svc"
 
-    - name: Test PHP App ↔ MySQL
-      run: |
-        docker network create test-net
-        docker run -d --name mysql-test --network test-net -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=users mysql:8.0
-        sleep 20
-        docker build -t test-php ./php-app
-        docker run --rm --network test-net test-php php -r "echo mysqli_connect('mysql-test', 'root', 'root', 'users') ? '✅ Connected' : '❌ Failed';"
+            echo "→ Testing $svc_name against MySQL"
+            docker network create test-net || true
+            docker run -d --name mysql-test --network test-net \
+              -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=users mysql:8.0
+            sleep 20
 
-    - name: Push php-app
-      run: docker push asyiqan/cnas-php-app:latest
+            # Build a disposable test image to verify connectivity
+            docker build -t test-$svc_name "$svc"
+            docker run --rm --network test-net test-$svc_name \
+              php -r "echo mysqli_connect('mysql-test','root','root','users') ? '✅ OK' : '❌ FAIL';"
 
-    - name: Push nginx
-      run: docker push asyiqan/cnas-nginx-proxy:latest
-
-    - name: Push mysql
-      run: docker push asyiqan/cnas-mysql-db:latest
+            # Push the real image
+            docker push $img:${IMAGE_TAG}
+          done
