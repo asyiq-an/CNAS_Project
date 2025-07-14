@@ -1,0 +1,30 @@
+_format_version: "3.0"
+
+services:
+- name: create-service
+  url: http://create-service:80
+  routes:
+  - name: create-route
+    paths:
+    - /create
+
+- name: update-service
+  url: http://update-service:80
+  routes:
+  - name: update-route
+    paths:
+    - /update
+
+- name: delete-service
+  url: http://delete-service:80
+  routes:
+  - name: delete-route
+    paths:
+    - /delete
+
+- name: query-service
+  url: http://query-service:80
+  routes:
+  - name: query-route
+    paths:
+    - /
