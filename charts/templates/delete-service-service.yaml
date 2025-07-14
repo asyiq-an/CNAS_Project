@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: delete-service
+  namespace: cnas-crud-php
+spec:
+  selector:
+    app: delete-service
+  ports:
+  - port: 80
+    targetPort: 80
+

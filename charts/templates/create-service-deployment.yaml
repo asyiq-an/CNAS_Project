@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: create-service
+  namespace: cnas-crud-php
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: create-service
+  template:
+    metadata:
+      labels:
+        app: create-service
+    spec:
+      containers:
+      - name: create-service
+        image: mrdocker123x3/create-service:latest
+        env:
+        - name: DB_HOST
+          value: mysql
+        - name: DB_USER
+          value: root
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: password
+        - name: DB_NAME
+          value: mydb
+        ports:
+        - containerPort: 80

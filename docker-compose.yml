@@ -1,0 +1,80 @@
+services:
+
+  mysql:
+    image: mysql:8
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: mydb
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./users.sql:/docker-entrypoint-initdb.d/users.sql
+      - mysql-data:/var/lib/mysql
+
+  create-service:
+    build: ./create-service
+    depends_on:
+      - mysql
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: rootpass
+      DB_NAME: mydb
+    expose:
+      - "80"
+
+  update-service:
+    build: ./update-service
+    depends_on:
+      - mysql
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: rootpass
+      DB_NAME: mydb
+    expose:
+      - "80"
+
+  delete-service:
+    build: ./delete-service
+    depends_on:
+      - mysql
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: rootpass
+      DB_NAME: mydb
+    expose:
+      - "80"
+
+  query-service:
+    build: ./query-service
+    depends_on:
+      - mysql
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: rootpass
+      DB_NAME: mydb
+    expose:
+      - "80"
+
+  kong:
+    image: kong:latest
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /usr/local/kong/declarative/kong.yml
+    ports:
+      - "8000:8000" 
+      - "8001:8001"  
+    volumes:
+      - ./kong/kong.yml:/usr/local/kong/declarative/kong.yml:ro
+    depends_on:
+      - create-service
+      - update-service
+      - delete-service
+      - query-service
+
+volumes:
+  mysql-data:

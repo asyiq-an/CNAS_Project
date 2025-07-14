@@ -7,7 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("ss", $name, $email);
     $stmt->execute();
     $stmt->close();
-    header("Location: index.php");
+    header("Location: /");
     exit();
 }
 ?>
@@ -19,5 +19,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     Email: <input name="email" required><br><br>
     <button type="submit">Create</button>
 </form>
-<a href="index.php">Back</a>
+<a href="/">Back</a>
 </body></html>
