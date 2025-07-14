@@ -1,3 +1,4 @@
+# .github/workflows/ci.yml
 name: CI – Build, Test & Push All Services
 
 on:
@@ -41,37 +42,39 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build & Push Nginx
-        run: |
-          docker build -t $DOCKERHUB_NAMESPACE/cnas-nginx-proxy:${IMAGE_TAG} ./nginx
-          docker push   $DOCKERHUB_NAMESPACE/cnas-nginx-proxy:${IMAGE_TAG}
-
       - name: Build & Push MySQL Init Image
         run: |
-          # optional: if you have a custom Dockerfile under database/
           docker build -t $DOCKERHUB_NAMESPACE/cnas-mysql-db:${IMAGE_TAG} ./database
           docker push   $DOCKERHUB_NAMESPACE/cnas-mysql-db:${IMAGE_TAG}
 
-      # Loop through each PHP service folder
       - name: Build, Test & Push PHP Micro‑services
         run: |
-          for svc in services/*; do
-            svc_name=$(basename "$svc")
-            img="$DOCKERHUB_NAMESPACE/$svc_name"
-            echo "→ Building $svc_name"
-            docker build -t $img:${IMAGE_TAG} "$svc"
+          # ensure test network exists
+          docker network create test-net || true
 
-            echo "→ Testing $svc_name against MySQL"
-            docker network create test-net || true
+          for svc_dir in services/*; do
+            svc=$(basename "$svc_dir")
+            img="$DOCKERHUB_NAMESPACE/$svc"
+
+            echo "==> Building $svc"
+            docker build -t $img:${IMAGE_TAG} "$svc_dir"
+
+            echo "==> Spinning up test MySQL for $svc"
             docker run -d --name mysql-test --network test-net \
-              -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=users mysql:8.0
+              -e MYSQL_ROOT_PASSWORD=root \
+              -e MYSQL_DATABASE=users \
+              mysql:8.0
+
             sleep 20
 
-            # Build a disposable test image to verify connectivity
-            docker build -t test-$svc_name "$svc"
-            docker run --rm --network test-net test-$svc_name \
-              php -r "echo mysqli_connect('mysql-test','root','root','users') ? '✅ OK' : '❌ FAIL';"
+            echo "==> Testing $svc connectivity"
+            docker build -t test-$svc "$svc_dir"
+            docker run --rm --network test-net test-$svc \
+              php -r "exit(mysqli_connect('mysql-test','root','root','users') ? 0 : 1);"
 
-            # Push the real image
+            echo "==> Pushing $svc:${IMAGE_TAG}"
             docker push $img:${IMAGE_TAG}
+
+            # cleanup
+            docker rm -f mysql-test || true
           done
