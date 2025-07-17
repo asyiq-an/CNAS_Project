@@ -11,7 +11,18 @@ jobs:
     steps:
       - name: Trigger GitLab CI pipeline
         run: |
-          curl -X POST \
+          echo "Triggering GitLab CI pipeline..."
+          RESPONSE=$(curl -s -w "%{http_code}" -o response.txt -X POST "https://gitlab.syncupwith.me/api/v4/projects/1/trigger/pipeline" \
+            -H "User-Agent: GitHub-Actions-Trigger/1.0" \
             -F token=${{ secrets.GITLAB_TRIGGER_TOKEN }} \
-            -F ref=main \
-            https://gitlab.syncupwith.me/api/v4/projects/1/trigger/pipeline
+            -F ref=main)
+
+          echo "GitLab response status: $RESPONSE"
+          cat response.txt
+
+          if [[ "$RESPONSE" -ne 201 ]]; then
+            echo "❌ Failed to trigger GitLab pipeline"
+            exit 1
+          else
+            echo "✅ GitLab pipeline triggered successfully"
+          fi
