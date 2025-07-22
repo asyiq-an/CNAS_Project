@@ -1,10 +1,9 @@
-# .github/workflows/hadolint.yml
 name: Dockerfile Lint
 
 on:
   push:
     paths:
-      - '**/Dockerfile'
+      - '**/Dockerfile'  # triggers on any Dockerfile anywhere
   pull_request:
     paths:
       - '**/Dockerfile'
@@ -17,5 +16,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Lint Dockerfile
+      - name: Lint Dockerfiles recursively
         uses: hadolint/hadolint-action@v3.1.0
+        with:
+          recursive: true
