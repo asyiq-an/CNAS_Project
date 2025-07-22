@@ -1,4 +1,3 @@
-# .github/workflows/ci.yml
 name: CI – Build, Test & Push All Services
 
 on:
@@ -15,20 +14,6 @@ jobs:
   build-test-push:
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: users
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=3
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -44,37 +29,37 @@ jobs:
 
       - name: Build & Push MySQL Init Image
         run: |
-          docker build -t $DOCKERHUB_NAMESPACE/cnas-mysql-db:${IMAGE_TAG} ./database
+          docker build -t $DOCKERHUB_NAMESPACE/cnas-mysql-db:${IMAGE_TAG} ./mysql
           docker push   $DOCKERHUB_NAMESPACE/cnas-mysql-db:${IMAGE_TAG}
 
-      - name: Build, Test & Push PHP Micro‑services
+      - name: Build, Test & Push PHP + NGINX Services
         run: |
-          # ensure test network exists
           docker network create test-net || true
 
-          for svc_dir in services/*; do
-            svc=$(basename "$svc_dir")
-            img="$DOCKERHUB_NAMESPACE/$svc"
+          for svc in php-app nginx; do
+            img="$DOCKERHUB_NAMESPACE/cnas-$svc"
 
             echo "==> Building $svc"
-            docker build -t $img:${IMAGE_TAG} "$svc_dir"
+            docker build -t $img:${IMAGE_TAG} "./$svc"
 
-            echo "==> Spinning up test MySQL for $svc"
+            echo "==> Starting MySQL for $svc test"
             docker run -d --name mysql-test --network test-net \
               -e MYSQL_ROOT_PASSWORD=root \
               -e MYSQL_DATABASE=users \
               mysql:8.0
 
-            sleep 20
+            echo "==> Waiting for MySQL to be ready"
+            for i in {1..10}; do
+              docker exec mysql-test mysqladmin ping -h127.0.0.1 -uroot -proot && break
+              sleep 5
+            done
 
             echo "==> Testing $svc connectivity"
-            docker build -t test-$svc "$svc_dir"
-            docker run --rm --network test-net test-$svc \
+            docker run --rm --network test-net $img:${IMAGE_TAG} \
               php -r "exit(mysqli_connect('mysql-test','root','root','users') ? 0 : 1);"
 
-            echo "==> Pushing $svc:${IMAGE_TAG}"
+            echo "==> Pushing $img:${IMAGE_TAG}"
             docker push $img:${IMAGE_TAG}
 
-            # cleanup
             docker rm -f mysql-test || true
           done
