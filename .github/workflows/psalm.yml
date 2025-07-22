@@ -18,11 +18,29 @@ jobs:
         with:
           php-version: '8.2'
 
-      - name: Run Psalm on all services
+      - name: Run Psalm on all PHP microservices
         run: |
           for dir in services/*-service; do
             echo "==> Running Psalm in $dir"
+
+            # Download psalm.phar
             curl -sSL https://github.com/vimeo/psalm/releases/latest/download/psalm.phar -o "$dir/psalm.phar"
             chmod +x "$dir/psalm.phar"
-            (cd "$dir" && ./psalm.phar --show-info=true) || exit 1
+
+            cd "$dir"
+
+            # Initialize Psalm config if missing
+            if [ ! -f psalm.xml ] && [ ! -f psalm.xml.dist ]; then
+              echo "⚠️ No Psalm config found in $dir, initializing..."
+              php psalm.phar --init --level=5 --ansi --no-progress
+            fi
+
+            # Run Psalm analysis
+            ./psalm.phar --show-info=true || {
+              echo "❌ Psalm found issues in $dir"
+              exit 1
+            }
+
+            echo "✅ Psalm passed for $dir"
+            cd - > /dev/null
           done
