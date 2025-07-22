@@ -13,14 +13,20 @@ jobs:
       matrix:
         include:
           - name: mysql
-            path: ./services/mysql
+            path: ./database
             tag: ghcr.io/asyiq-an/cnas-mysql-db:latest
-          - name: php-app
-            path: ./services/php-app
-            tag: ghcr.io/asyiq-an/cnas-php-app:latest
-          - name: nginx
-            path: ./services/nginx
-            tag: ghcr.io/asyiq-an/cnas-nginx-proxy:latest
+          - name: create-service
+            path: ./services/create-service
+            tag: ghcr.io/asyiq-an/cnas-create-service:latest
+          - name: delete-service
+            path: ./services/delete-service
+            tag: ghcr.io/asyiq-an/cnas-delete-service:latest
+          - name: query-service
+            path: ./services/query-service
+            tag: ghcr.io/asyiq-an/cnas-query-service:latest
+          - name: update-service
+            path: ./services/update-service
+            tag: ghcr.io/asyiq-an/cnas-update-service:latest
 
     steps:
       - uses: actions/checkout@v4
