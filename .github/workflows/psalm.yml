@@ -30,7 +30,7 @@ jobs:
 
             if [ ! -f psalm.xml ] && [ ! -f psalm.xml.dist ]; then
               echo "⚠️ No Psalm config found in $dir, initializing..."
-              php psalm.phar --init --no-progress
+              php psalm.phar --init
             fi
 
             ./psalm.phar --show-info=true || {
