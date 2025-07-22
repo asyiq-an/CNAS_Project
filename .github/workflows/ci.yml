@@ -29,18 +29,19 @@ jobs:
 
       - name: Build & Push MySQL Init Image
         run: |
-          docker build -t $DOCKERHUB_NAMESPACE/cnas-mysql-db:${IMAGE_TAG} ./mysql
+          docker build -t $DOCKERHUB_NAMESPACE/cnas-mysql-db:${IMAGE_TAG} ./database
           docker push   $DOCKERHUB_NAMESPACE/cnas-mysql-db:${IMAGE_TAG}
 
-      - name: Build, Test & Push PHP + NGINX Services
+      - name: Build, Test & Push PHP Microservices
         run: |
           docker network create test-net || true
 
-          for svc in php-app nginx; do
+          for svc_dir in services/*-service; do
+            svc=$(basename "$svc_dir")
             img="$DOCKERHUB_NAMESPACE/cnas-$svc"
 
             echo "==> Building $svc"
-            docker build -t $img:${IMAGE_TAG} "./$svc"
+            docker build -t $img:${IMAGE_TAG} "$svc_dir"
 
             echo "==> Starting MySQL for $svc test"
             docker run -d --name mysql-test --network test-net \
