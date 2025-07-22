@@ -13,13 +13,13 @@ jobs:
       matrix:
         include:
           - name: mysql
-            path: ./mysql
+            path: ./services/mysql
             tag: ghcr.io/asyiq-an/cnas-mysql-db:latest
           - name: php-app
-            path: ./php-app
+            path: ./services/php-app
             tag: ghcr.io/asyiq-an/cnas-php-app:latest
           - name: nginx
-            path: ./nginx
+            path: ./services/nginx
             tag: ghcr.io/asyiq-an/cnas-nginx-proxy:latest
 
     steps:
