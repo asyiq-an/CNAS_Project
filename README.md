@@ -1,6 +1,6 @@
 # CNAS_Project
 
-## CNAS Dir Tree t3.2
+## CNAS Dir Tree t
 ```
 CNAS_Project/
 ├── .github/
