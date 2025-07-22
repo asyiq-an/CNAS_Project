@@ -1,43 +1,23 @@
-name: Psalm PHP Static Analysis
+- name: Run Psalm on all PHP microservices
+  run: |
+    for dir in services/*-service; do
+      echo "==> Running Psalm in $dir"
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
+      curl -sSL https://github.com/vimeo/psalm/releases/latest/download/psalm.phar -o "$dir/psalm.phar"
+      chmod +x "$dir/psalm.phar"
 
-jobs:
-  psalm:
-    runs-on: ubuntu-latest
+      cd "$dir"
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      if [ ! -f psalm.xml ] && [ ! -f psalm.xml.dist ]; then
+        echo "⚠️ No Psalm config found in $dir, initializing..."
+        php psalm.phar --init --no-progress
+      fi
 
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
+      ./psalm.phar --show-info=true || {
+        echo "❌ Psalm found issues in $dir"
+        exit 1
+      }
 
-      - name: Run Psalm on all PHP microservices
-        run: |
-          for dir in services/*-service; do
-            echo "==> Running Psalm in $dir"
-
-            curl -sSL https://github.com/vimeo/psalm/releases/latest/download/psalm.phar -o "$dir/psalm.phar"
-            chmod +x "$dir/psalm.phar"
-
-            cd "$dir"
-
-            if [ ! -f psalm.xml ] && [ ! -f psalm.xml.dist ]; then
-              echo "⚠️ No Psalm config found in $dir, initializing..."
-              php psalm.phar --init --no-progress --ansi
-            fi
-
-            ./psalm.phar --show-info=true || {
-              echo "❌ Psalm found issues in $dir"
-              exit 1
-            }
-
-            echo "✅ Psalm passed for $dir"
-            cd - > /dev/null
-          done
+      echo "✅ Psalm passed for $dir"
+      cd - > /dev/null
+    done
