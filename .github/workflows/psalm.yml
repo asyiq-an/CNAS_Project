@@ -10,20 +10,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.2'
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
 
-    - name: Download Psalm PHAR
-      run: |
-        curl -L https://github.com/vimeo/psalm/releases/latest/download/psalm.phar -o psalm.phar
-        chmod +x psalm.phar
-      working-directory: php-app
-
-    - name: Run Psalm analysis
-      run: ./psalm.phar --show-info=true
-      working-directory: php-app
+      - name: Run Psalm on all services
+        run: |
+          for dir in services/*-service; do
+            echo "==> Running Psalm in $dir"
+            curl -sSL https://github.com/vimeo/psalm/releases/latest/download/psalm.phar -o "$dir/psalm.phar"
+            chmod +x "$dir/psalm.phar"
+            (cd "$dir" && ./psalm.phar --show-info=true) || exit 1
+          done
