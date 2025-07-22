@@ -18,11 +18,15 @@ jobs:
         with:
           php-version: '8.2'
 
-      - name: Install PHPMD
+      - name: Install PHPMD globally
         run: composer global require phpmd/phpmd
 
       - name: Add Composer global bin to PATH
         run: echo "${{ github.workspace }}/.composer/vendor/bin" >> $GITHUB_PATH
 
-      - name: Run PHPMD
-        run: phpmd php-app text cleancode,codesize,controversial,design,naming,unusedcode
+      - name: Run PHPMD on all services
+        run: |
+          for dir in services/*-service; do
+            echo "==> Running PHPMD on $dir"
+            phpmd "$dir" text cleancode,codesize,controversial,design,naming,unusedcode || exit 1
+          done
