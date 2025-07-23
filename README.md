@@ -5,8 +5,7 @@
 CNAS_Project/
 ├── .github/
 │   └── workflows/
-│       ├── ci.yml                 # build & push all service images
-│       └── cd.yml                 # deploy Helm chart to k8s
+│       ├── etc.yml                 # etc
 ├── charts/
 │   └── cnas-crud-php/             # your Helm chart, refactored
 │       ├── Chart.yaml
