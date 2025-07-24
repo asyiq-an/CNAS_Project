@@ -32,6 +32,7 @@ kubectl apply -f namespace.yaml
 kubectl apply -f charts/templates/mysql-secret.yaml -n $NAMESPACE
 kubectl apply -f charts/templates/mysql-init.yaml -n $NAMESPACE
 kubectl apply -f charts/templates/mysql-deployment.yaml -n $NAMESPACE
+kubectl apply -f charts/templates/mysql-pvc.yaml -n $NAMESPACE
 kubectl apply -f charts/templates/mysql-service.yaml -n $NAMESPACE
 
 kubectl apply -f charts/templates/create-service-deployment.yaml -n $NAMESPACE
