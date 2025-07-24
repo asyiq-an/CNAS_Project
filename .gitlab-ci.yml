@@ -4,13 +4,20 @@ stages:
 deploy_to_k8s:
   stage: deploy
   tags:
-    - k8  # must match your runner config
+    - k8  # Make sure your GitLab runner uses this tag
   script:
-    - echo "Starting deployment..."
-# The repo is cloned automatically in the runner's working directory 
-# So all files including charts/ will be available
-    - ls -l charts/templates/
+    # Load kubeconfig from base64 env variable
+    - echo "$KUBECONFIG_B64" | base64 -d > kubeconfig
+    - export KUBECONFIG=$PWD/kubeconfig
+
+    # Optional: Confirm cluster access (can be removed later)
+    - echo "Confirming Kubernetes cluster connectivity..."
+    - kubectl get nodes
+    - kubectl get pods -A
+
+    # Start deployment
+    - echo "Starting CNAS deployment..."
     - chmod +x charts/deploy-all.sh
     - ./charts/deploy-all.sh
   only:
-    - main  # deployment branch
+    - main
