@@ -9,5 +9,4 @@ spec:
   storageClassName: longhorn
   resources:
     requests:
-      storage: {{ .Values.mysql.storage }}
-
+      storage: 1Gi
