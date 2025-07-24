@@ -1,0 +1,16 @@
+stages:
+  - deploy
+
+deploy_to_k8s:
+  stage: deploy
+  tags:
+    - k8  # must match your runner config
+  script:
+    - echo "Starting deployment..."
+# The repo is cloned automatically in the runner's working directory 
+# So all files including charts/ will be available
+    - ls -l charts/templates/
+    - chmod +x charts/deploy-all.sh
+    - ./charts/deploy-all.sh
+  only:
+    - main  # deployment branch
