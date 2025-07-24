@@ -7,11 +7,10 @@ CNAS_Project/
 │   └── workflows/
 │       ├── etc.yml                 # etc
 ├── charts/
-│   └── cnas-crud-php/             # your Helm chart, refactored
-│       ├── Chart.yaml
-│       ├── values.yaml
-│       ├── templates/
-│       └── .helmignore
+│   └── Chart.yaml          # your Helm chart, refactored
+│   ├── values.yaml
+│   ├── templates/
+│   └── .helmignore
 ├── services/                      # all PHP micro‑services
 │   ├── create-service/
 │   │   ├── Dockerfile
