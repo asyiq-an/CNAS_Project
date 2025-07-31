@@ -4,10 +4,8 @@ metadata:
   name: cnas-ingress
   namespace: cnas-crud-php
   annotations:
-    konghq.com/strip-path: "true"
-
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
-  ingressClassName: kong
   rules:
   - host: cnas.local
     http:

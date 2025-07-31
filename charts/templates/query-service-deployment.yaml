@@ -13,10 +13,6 @@ spec:
       labels:
         app: query-service
     spec:
-      initContainers:
-        - name: wait-for-mysql
-          image: busybox
-          command: ['sh', '-c', 'until nslookup mysql.cnas-crud-php.svc.cluster.local; do echo waiting for mysql; sleep 2; done']
       containers:
       - name: query-service
         image: mrdocker123x3/query-service:latest
