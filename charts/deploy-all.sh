@@ -6,11 +6,9 @@ NAMESPACE="cnas-crud-php"
 echo "[INFO] Deleting CNAS Deployments and Services..."
 
 # Delete Deployments
-kubectl delete namespace $NAMESPACE
+kubectl delete namespace $NAMESPACE || true
 
 echo "[INFO] Applying updated manifests..."
-
-kubectl delete namespace $NAMESPACE || true
 
 kubectl apply -f charts/templates/mysql-secret.yaml -n $NAMESPACE
 kubectl apply -f charts/templates/mysql-init.yaml -n $NAMESPACE
