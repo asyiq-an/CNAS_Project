@@ -26,6 +26,8 @@ kubectl apply -f charts/templates/update-service-service.yaml -n $NAMESPACE
 kubectl apply -f charts/templates/delete-service-deployment.yaml -n $NAMESPACE
 kubectl apply -f charts/templates/delete-service-service.yaml -n $NAMESPACE
 
+kubectl apply -f charts/templates/ingress.yaml -n $NAMESPACE
+
 kubectl apply -f charts/templates/query-service-deployment.yaml -n $NAMESPACE
 kubectl apply -f charts/templates/query-service-service.yaml -n $NAMESPACE
 
