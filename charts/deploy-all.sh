@@ -10,7 +10,7 @@ echo "[INFO] Recreating namespace..."
 kubectl create namespace $NAMESPACE
 
 echo "[INFO] Applying updated manifests..."
-
+# applying stuff
 kubectl apply -f charts/templates/mysql-secret.yaml -n $NAMESPACE
 kubectl apply -f charts/templates/mysql-init.yaml -n $NAMESPACE
 kubectl apply -f charts/templates/mysql-deployment.yaml -n $NAMESPACE
