@@ -3,10 +3,11 @@ set -e
 
 NAMESPACE="cnas-crud-php"
 
-echo "[INFO] Deleting CNAS Deployments and Services..."
+echo "[INFO] Deleting CNAS namespace if it exists..."
+kubectl delete namespace $NAMESPACE --ignore-not-found
 
-# Delete Deployments
-kubectl delete namespace $NAMESPACE || true
+echo "[INFO] Recreating namespace..."
+kubectl create namespace $NAMESPACE
 
 echo "[INFO] Applying updated manifests..."
 
@@ -24,9 +25,9 @@ kubectl apply -f charts/templates/update-service-service.yaml -n $NAMESPACE
 kubectl apply -f charts/templates/delete-service-deployment.yaml -n $NAMESPACE
 kubectl apply -f charts/templates/delete-service-service.yaml -n $NAMESPACE
 
-kubectl apply -f charts/templates/ingress.yaml -n $NAMESPACE
-
 kubectl apply -f charts/templates/query-service-deployment.yaml -n $NAMESPACE
 kubectl apply -f charts/templates/query-service-service.yaml -n $NAMESPACE
 
 kubectl apply -f charts/templates/ingress.yaml -n $NAMESPACE
+
+echo "[INFO] Deployment complete."
