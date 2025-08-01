@@ -10,7 +10,7 @@ kubectl delete namespace $NAMESPACE
 
 echo "[INFO] Applying updated manifests..."
 
-kubectl apply -f namespace.yaml
+kubectl delete namespace $NAMESPACE || true
 
 kubectl apply -f charts/templates/mysql-secret.yaml -n $NAMESPACE
 kubectl apply -f charts/templates/mysql-init.yaml -n $NAMESPACE
