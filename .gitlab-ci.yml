@@ -1,16 +1,16 @@
 stages:
   - deploy
 
-deploy_to_k8s:
+local-hostshell:
   stage: deploy
   tags:
-    - k8  # Make sure your GitLab runner uses this tag
+    - shell  # Matches the tag used by your GitLab runner
   script:
-    # Load kubeconfig from base64 env variable
+    # Load kubeconfig from base64 env variables
     - echo "$KUBECONFIG_B64" | base64 -d > kubeconfig
     - export KUBECONFIG=$PWD/kubeconfig
 
-    # Optional: Confirm cluster access (can be removed later)
+    # Confirm Kubernetes access
     - echo "Confirming Kubernetes cluster connectivity..."
     - kubectl get nodes
     - kubectl get pods -A
